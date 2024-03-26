@@ -1,1 +1,1 @@
-isinstance(42, int)
+isinstance(55, int)
