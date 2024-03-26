@@ -1,1 +1,1 @@
-str.upper('hello')
+str.upper('bye')
