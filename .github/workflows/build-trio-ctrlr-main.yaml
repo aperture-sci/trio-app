@@ -35,5 +35,5 @@ jobs:
       uses: docker/build-push-action@v6.18.0
       with:
         push: true
-        context: "{{defaultContext}}:ctrlt"
+        context: "{{defaultContext}}:ctrlr"
         tags: aperturesci/ctrlr:${{ github.ref_name }},aperturesci/ctrlr:${{ github.ref_name }}-${{ env.SHORT_SHA }}
