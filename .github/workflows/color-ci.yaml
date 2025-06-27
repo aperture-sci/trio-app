@@ -1,0 +1,83 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - color/**
+  pull_request:
+    types: [opened, reopened, edited]
+    paths:
+      - color/**
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    
+    outputs:
+      sha_short: ${{ steps.vars.outputs.sha_short }}
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Create SHORT_SHA
+      id: vars
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      
+    - name: Building the Docker image
+      run: |
+        cd color;
+        docker build . --tag codefresh_sa/color-service:${{ steps.vars.outputs.sha_short }}
+        
+    - name: Create PR Tag if needed
+      run: |
+        if [[ ${{ github.event_name }} == 'pull_request' ]]; then
+            export "PR_TAG=${{ github.head_ref }}_${{ github.event.pull_request.number }}"
+        fi
+        
+    - name: Push To Registry
+      uses: redhat-actions/push-to-registry@v2.5.1
+      with:
+        image: codefresh_sa/color-service
+        tags: ${{ steps.vars.outputs.sha_short }} $PR_TAG
+        registry: quay.io
+        username: codefresh_sa+csdp_salesdemo_dev
+        password: ${{ secrets.docker_registry_password }}
+
+  csdp-report-image-info:
+  
+    runs-on: ubuntu-latest
+    
+    needs: build
+  
+    container:
+      image: quay.io/codefreshplugins/argo-hub-workflows-codefresh-csdp-versions-1.1.0-images-report-image-info:main
+    
+    steps:
+#     quay.io/codefresh_sa/color-service:${{ needs.build.outputs.sha_short }}
+      - name: Echo var
+        run: |
+          echo "quay.io/codefresh_sa/color-service:${{ needs.build.outputs.sha_short }}"
+      - name: Report Docker Image to CSDP
+        run: |
+          if [[ ${{ github.event_name }} == 'pull_request' ]]; then
+            export "GIT_BRANCH=${{ github.head_ref }}"
+          else
+            export "GIT_BRANCH=${{ github.ref_name }}"
+          fi
+          node /app/src/index.js
+        working-directory: /app/src/
+        env:
+          IMAGE_NAME : quay.io/codefresh_sa/color-service:${{ needs.build.outputs.sha_short }} 
+          CF_HOST: https://g.codefresh.io
+          CF_API_KEY: ${{ secrets.CF_RUNTIME_KEY }}
+          REGISTRY_USERNAME : codefresh_sa+csdp_salesdemo_dev
+          REGISTRY_PASSWORD : ${{ secrets.docker_registry_password }}
+          REGISTRY_DOMAIN : quay.io
+          WORKFLOW_NAME: ${{ github.workflow }}
+          # WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/${{github.workflow}}
+          WORKFLOW_URL: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+          LOGS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
