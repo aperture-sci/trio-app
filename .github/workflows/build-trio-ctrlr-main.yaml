@@ -36,4 +36,4 @@ jobs:
       with:
         push: true
         context: "{{defaultContext}}:ctrlr"
-        tags: aperturesci/ctrlr:${{ github.ref_name }},aperturesci/ctrlr:${{ github.ref_name }}-${{ env.SHORT_SHA }}
+        tags: aperturesci/ctrlr:${{ github.ref_name }}
