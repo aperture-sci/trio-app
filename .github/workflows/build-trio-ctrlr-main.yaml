@@ -30,7 +30,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
 
     - name: Building the Docker image
-    working_directory: ctrlr
+      working_directory: ctrlr
       uses: docker/build-push-action@v6.18.0
       with:
         push: true
