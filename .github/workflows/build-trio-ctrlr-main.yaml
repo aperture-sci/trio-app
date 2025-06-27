@@ -1,0 +1,38 @@
+name: Build Trio ctrlr
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ctrlr/**
+      - fask-ui/**
+      - buslog/**
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    
+    outputs:
+      sha_short: ${{ steps.vars.outputs.sha_short }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create SHORT_SHA
+      id: vars
+      run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    - name: Building the Docker image
+      run: |
+        cd ctrlr;
+        docker build . --tag aperturesci/ctrlr:${{ steps.vars.outputs.sha_short }}
+        
+    - name: Push To Registry
+      uses: redhat-actions/push-to-registry@v2.8
+      with:
+        image: aperturesci/ctrlr
+        tags: ${{ github.ref_name } ${{ github.ref_name }}-${{ steps.vars.outputs.sha_short }}
+        registry: docker.io
+        username: aperturesci
+        password: ${{ secrets.DOCKERHUB_PAT }}
