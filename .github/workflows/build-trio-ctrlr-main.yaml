@@ -33,4 +33,4 @@ jobs:
       uses: docker/build-push-action@v6.18.0
       with:
         push: true
-        tags: aperturesci/ctrlr:${{ github.ref_name }}  aperturesci/ctrlr:${{ github.ref_name }}-${{ SHORT_SHA }}
+        tags: aperturesci/ctrlr:${{ github.ref_name }},aperturesci/ctrlr:${{ github.ref_name }}-${{ SHORT_SHA }}
