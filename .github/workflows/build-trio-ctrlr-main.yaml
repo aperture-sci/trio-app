@@ -11,14 +11,14 @@ on:
 jobs:
   build:
     runs-on:  ubuntu-latest
-    outputs:
-      sha_short: ${{ steps.vars.outputs.sha_short }}
+    # outputs:
+    #   sha_short: ${{ steps.vars.outputs.sha_short }}
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Create SHORT_SHA
-      id: vars
-      run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+    # steps:
+    # - uses: actions/checkout@v2
+    # - name: Create SHORT_SHA
+    #   id: vars
+    #   run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -26,14 +26,14 @@ jobs:
         username: aperturesci
         password: ${{ secrets.DOCKERHUB_PAT }}
 
-    - name: Access Source directory
-      run: cd ctrlr
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+    # - name: Build image
+    #   run: |
+    #     cd ctrlr
+    #     docker build -t aperturesci/ctrlr:${{ github.ref_name }} .
 
     - name: Building the Docker image
       uses: docker/build-push-action@v6.18.0
       with:
         push: true
+        dockerfile: crtlr/Dockerfile
         tags: aperturesci/ctrlr:${{ github.ref_name }},aperturesci/ctrlr:${{ github.ref_name }}-${{ env.SHORT_SHA }}
