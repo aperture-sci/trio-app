@@ -45,11 +45,9 @@ jobs:
         gh pr list --search "${{ github.sha }}" --state merged --json headRefName > pr_branch.json 
     
     - name: extract_pr_branch_v2
-      uses: backplane/jq:latest
-      with:
-        run: |
-          echo "PR_BRANCH=$(jq -r .[0].headRefName pr_branch.json)" >> $GITHUB_ENV
-          echo "DOCKERFILE_CONTENT=$(cat ctrlr/Dockerfile | base64 -w 0 )" >> $GITHUB_ENV
+      run: |
+        echo "PR_BRANCH=$(jq -r .[0].headRefName pr_branch.json)" >> $GITHUB_ENV
+        echo "DOCKERFILE_CONTENT=$(cat ctrlr/Dockerfile | base64 -w 0 )" >> $GITHUB_ENV
 
     - name: enrich-image
       uses: codefresh-io/codefresh-report-image@0.0.161
