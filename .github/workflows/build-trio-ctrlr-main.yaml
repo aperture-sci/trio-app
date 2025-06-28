@@ -50,9 +50,7 @@ jobs:
         echo "PR_BRANCH=$(jq -r .[0].headRefName pr_branch.json)" >> $GITHUB_ENV
         echo "DOCKERFILE_CONTENT=$(cat ctrlr/Dockerfile | base64 -w 0 )" >> $GITHUB_ENV
 
-            - name: codefresh-report-image
-
-    - name: enrich_image
+    - name: enrich-image
       uses: codefresh-io/codefresh-report-image@0.0.161
       with:
         CF_API_KEY: ${{ secrers.CF_API_KEY }}
