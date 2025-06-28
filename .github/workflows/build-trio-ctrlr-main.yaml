@@ -52,7 +52,7 @@ jobs:
     - name: enrich-image
       uses: codefresh-io/codefresh-report-image@0.0.161
       with:
-        CF_API_KEY: ${{ secrers.CF_API_KEY }}
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
         CF_RUNTIME_NAME: demo
         CF_GITHUB_TOKEN: ${{ github.token }}
         CF_GIT_PROVIDER: github
