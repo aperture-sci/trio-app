@@ -52,19 +52,19 @@ jobs:
 
             - name: codefresh-report-image
 
-  uses: codefresh-io/codefresh-report-image@0.0.161
-  with:
-    CF_API_KEY: ${{ secrers.CF_API_KEY }}
-    # Codefresh runtime exposed in cluster address: https://your.clusters.ci-cd.com/app-proxy
-    CF_RUNTIME_NAME: demo
-    CF_GITHUB_TOKEN: ${{ github.token }}
-    CF_GIT_PROVIDER: github
-    CF_GITHUB_REPO: aperture-sci/trio-app
-    CF_GIT_BRANCH: ${{ env.PR_BRANCH }}
-    CF_JIRA_INTEGRATION: jira-intg
-    CF_JIRA_MESSAGE: ${{ github.event.head_commit.message }}
-    CF_JIRA_PROJECT_PREFIX: AP
-    CF_IMAGE: docker.io/aperturesci/ctrlr:${{ github.sha }}
-    CF_CONTAINER_REGISTRY_INTEGRATION: docker-intg
-    CF_DOCKERFILE_CONTENT: ${{ env.DOCKERFILE_CONTENT }}
-    CF_JIRA_HOST_URL: https://codefresh-io.atlassian.net/jira
+    - name: enrich_image
+      uses: codefresh-io/codefresh-report-image@0.0.161
+      with:
+        CF_API_KEY: ${{ secrers.CF_API_KEY }}
+        CF_RUNTIME_NAME: demo
+        CF_GITHUB_TOKEN: ${{ github.token }}
+        CF_GIT_PROVIDER: github
+        CF_GITHUB_REPO: aperture-sci/trio-app
+        CF_GIT_BRANCH: ${{ env.PR_BRANCH }}
+        CF_JIRA_INTEGRATION: jira-intg
+        CF_JIRA_MESSAGE: ${{ github.event.head_commit.message }}
+        CF_JIRA_PROJECT_PREFIX: AP
+        CF_IMAGE: docker.io/aperturesci/ctrlr:${{ github.sha }}
+        CF_CONTAINER_REGISTRY_INTEGRATION: docker-intg
+        CF_DOCKERFILE_CONTENT: ${{ env.DOCKERFILE_CONTENT }}
+        CF_JIRA_HOST_URL: https://codefresh-io.atlassian.net/jira
