@@ -49,9 +49,11 @@ jobs:
         CF_GITHUB_TOKEN: ${{ github.token }}
         CF_GIT_PROVIDER: github
         CF_GITHUB_REPO: aperture-sci/trio-app
-        CF_GIT_BRANCH: ${{ env.PR_BRANCH }}
+        CF_GIT_BRANCH: 'review/PVC-error_112413016'
+        # ${{ env.PR_BRANCH }}
         CF_JIRA_INTEGRATION: jira-intg
-        CF_JIRA_MESSAGE: ${{ github.event.head_commit.message }}
+        CF_JIRA_MESSAGE: "[AP-12345] Trying to force something"
+        # ${{ github.event.head_commit.message }}
         CF_JIRA_PROJECT_PREFIX: AP
         CF_IMAGE: docker.io/aperturesci/ctrlr:${{ github.sha }}
         CF_CONTAINER_REGISTRY_INTEGRATION: docker-intg
