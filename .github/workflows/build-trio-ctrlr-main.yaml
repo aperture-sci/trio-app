@@ -39,11 +39,10 @@ jobs:
         tags: aperturesci/ctrlr:${{ github.sha }}
     
     - name: get_pr_branch_from_commit
-      with:
-        context: "{{defaultContext}}:ctrlr"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        cd ctrlr
         gh pr list --search "${{ github.sha }}" --state merged --json headRefName > pr_branch.json 
         echo "PR_BRANCH=$(jq -r .[0].headRefName pr_branch.json)" >> $GITHUB_ENV
         echo "DOCKERFILE_CONTENT=$(cat ctrlr/Dockerfile | base64 -w 0 )" >> $GITHUB_ENV
