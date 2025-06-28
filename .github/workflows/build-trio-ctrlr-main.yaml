@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v6.18.0
       with:
         push: true
-        context: .
+        context: ./ctrlr
         tags: aperturesci/ctrlr:${{ github.sha }}
     
     - name: get_pr_branch_from_commit
