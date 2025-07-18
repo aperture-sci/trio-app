@@ -11,31 +11,48 @@ on:
   workflow_dispatch: # This event enables manual triggering
   
 jobs:
-  build:
-    runs-on:  ubuntu-latest
-    # outputs:
-    #   sha_short: ${{ steps.vars.outputs.sha_short }}
-    strategy:
-      matrix:
-        service:
-          - name: buslog
-            context: ./buslog
-            env:
-             SERVICE: buslog
-          - name: ctrlr
-            context: ./ctrlr
-            env:
-             SERVICE: ctrlr             
-          - name: flask-ui
-            context: ./flask-ui
-            env:
-             SERVICE: flask-ui
-    name: Build  ${{ matrix.service.name }}   
+  detect:
+    runs-on: ubuntu-latest
+
+    outputs:
+      SHORT_SHA: ${{ steps.detect.outputs.sha_short }}
+      SERVICE: ${{ steps.detect.outputs.service }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Create SHORT_SHA
-      id: vars
-      run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Determine changed folder
+        id: detect
+        run: |
+          # Get changed files between HEAD and base (main or previous commit)
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD)
+
+          # Detect which services changed
+          SERVICE=""
+          for file in $CHANGED_FILES; do
+            if [[ "$file" == buslog/* ]]; then
+              SERVICE="bluslog"
+              break
+            elif [[ "$file" == flask-ui/* ]]; then
+              SERVICE="flask-ui"
+              break
+            elif [[ "$file" == ctrlr/* ]]; then
+              SERVICE="ctrlr"
+              break
+            fi
+          done
+
+          echo "Changed service: $SERVICE"
+          echo "SERVICE=$SERVICE" >> $GITHUB_OUTPUT
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+
+  build:
+    needs: detect
+    runs-on:  ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Login to Docker Hub
       uses: docker/login-action@v3
@@ -44,19 +61,18 @@ jobs:
         password: ${{ secrets.DOCKERHUB_PAT }}
 
     - name: Building the Docker image
-      uses: docker/build-push-action@v6.18.0
-      with:
-        push: true
-        context: ./${{ matrix.service.context }}
-        tags: aperturesci/${{matrix.service.name}}:${{ github.sha }}
+      run: |
+        cd ${{ needs.detect.outputs.SERVICE }}
+        docker build -t aperturesci/${{ needs.detect.outputs.SERVICE }}:${{ needs.detect.outputs.SHORT_SHA }} .
     
     - name: get_pr_branch_from_commit
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        cd ${{ needs.detect.outputs.SERVICE }}
         gh pr list --search "${{ github.sha }}" --state merged --json headRefName > pr_branch.json 
         echo "PR_BRANCH=$(jq -r .[0].headRefName pr_branch.json)" >> $GITHUB_ENV
-        echo "DOCKERFILE_CONTENT=$(cat ${{ matrix.service.name }}/Dockerfile | base64 -w 0 )" >> $GITHUB_ENV
+        echo "DOCKERFILE_CONTENT=$(catDockerfile | base64 -w 0 )" >> $GITHUB_ENV
 
     - name: enrich-image
       uses: codefresh-io/codefresh-report-image@0.0.161
@@ -66,13 +82,12 @@ jobs:
         CF_GITHUB_TOKEN: ${{ github.token }}
         CF_GIT_PROVIDER: github
         CF_GITHUB_REPO: aperture-sci/trio-app
-        CF_GIT_BRANCH: 'review/PVC-error_112413016'
-        # ${{ env.PR_BRANCH }}
+        CF_GIT_BRANCH: '${{ PR_BRANCH }}'
         CF_JIRA_INTEGRATION: jira-intg
         CF_JIRA_MESSAGE: "[AP-12345] Trying to force something"
         # ${{ github.event.head_commit.message }}
         CF_JIRA_PROJECT_PREFIX: AP
-        CF_IMAGE: docker.io/aperturesci/${{ matrix.service.name }}:${{ github.sha }}
+        CF_IMAGE: docker.io/aperturesci/${{ needs.detect.outputs.SERVICE }}:${{ needs.detect.outputs.SHORT_SHA }}
         CF_CONTAINER_REGISTRY_INTEGRATION: docker-intg
         CF_DOCKERFILE_CONTENT: ${{ env.DOCKERFILE_CONTENT }}
         CF_JIRA_HOST_URL: https://codefresh-io.atlassian.net/jira
