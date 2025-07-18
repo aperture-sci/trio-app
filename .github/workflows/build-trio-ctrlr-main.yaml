@@ -50,6 +50,8 @@ jobs:
   build:
     needs: detect
     runs-on:  ubuntu-latest
+    if: ${{ needs.detect.outputs.SERVICE != '' }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -82,7 +84,7 @@ jobs:
         CF_GITHUB_TOKEN: ${{ github.token }}
         CF_GIT_PROVIDER: github
         CF_GITHUB_REPO: aperture-sci/trio-app
-        CF_GIT_BRANCH: '${{ PR_BRANCH }}'
+        CF_GIT_BRANCH: '${{ env.PR_BRANCH }}'
         CF_JIRA_INTEGRATION: jira-intg
         CF_JIRA_MESSAGE: "[AP-12345] Trying to force something"
         # ${{ github.event.head_commit.message }}
