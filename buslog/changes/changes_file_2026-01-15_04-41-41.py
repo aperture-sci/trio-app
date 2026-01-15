@@ -1,2 +1,3 @@
 tuple((1, 2, 3))
 dict({'a': 1, 'b': 2})
+help(print)
